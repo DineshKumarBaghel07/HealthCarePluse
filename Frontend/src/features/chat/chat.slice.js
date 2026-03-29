@@ -31,13 +31,13 @@ const chatSlice = createSlice({
             state.chats = action.payload
         },
         setLoading :(state,action)=>{
-            state.isLoading = action.loading
+            state.isLoading = action.payload
         },
         setError:(state,action)=>{
-            state.error = action.error
+            state.error = action.payload
         }
     }
 });
 
-export const{createNewChat,addNewMessage,addMessage,setchat,setLoading,setError} = chatSlice.actions
+export const{createNewChat,addNewMessage,addMessage,setChat,setLoading,setError} = chatSlice.actions
 export default chatSlice.reducer

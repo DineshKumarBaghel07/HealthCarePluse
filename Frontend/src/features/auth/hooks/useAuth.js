@@ -1,45 +1,76 @@
-import{useDispatch} from "react-redux";
-import {login,register,getMe} from "../service/auth.api.js"
-import {setUser,setLoading,setError} from "../auth.slice.js";
+import { useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { login, register, getMe, logout } from "../service/auth.api.js";
+import { setUser, setLoading, setError } from "../auth.slice.js";
 
-export const useAuth = ()  => {
-    const dispatch = useDispatch()
+const getApiErrorMessage = (error, fallbackMessage) => {
+  const validationErrors = error.response?.data?.errors;
 
-    const handleRegsiter = async({username,phone,email,password}) =>{
-              try{
-                dispatch(setLoading(true))
-                const data = await register({username,phone,email,password});
-              }catch(error){
-                dispatch(setError(error.response?.data?.message || "Regsitration Failed"))
-              }finally{
-                dispatch(setLoading(false))
-              }
+  if (Array.isArray(validationErrors) && validationErrors.length > 0) {
+    return validationErrors[0].msg || fallbackMessage;
+  }
+
+  return error.response?.data?.message || fallbackMessage;
+};
+
+export const useAuth = () => {
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth);
+
+  const handleRegister = useCallback(async ({ username, phone, email, password }) => {
+    try {
+      dispatch(setLoading(true));
+      dispatch(setError(null));
+      await register({ username, phone, email, password });
+      return true;
+    } catch (error) {
+      dispatch(setError(getApiErrorMessage(error, "Registration failed")));
+      return false;
+    } finally {
+      dispatch(setLoading(false));
     }
+  }, [dispatch]);
 
-    const handleLogin  = async ({username,password}) =>{
-        try{
-            dispatch(setLoading(true))
-            const data = await login({username,password});
-            dispatch(setUser(data.user))
-        }catch(error){
-            dispatch(setError(error.response?.data?.message))
-        }finally{
-            dispatch(setLoading(false))
-        }
+  const handleLogin = useCallback(async ({ email, password }) => {
+    try {
+      dispatch(setLoading(true));
+      dispatch(setError(null));
+      const data = await login({ email, password });
+      dispatch(setUser(data.user));
+      return true;
+    } catch (error) {
+      dispatch(setError(getApiErrorMessage(error, "Login failed")));
+      return false;
+    } finally {
+      dispatch(setLoading(false));
     }
+  }, [dispatch]);
 
-    const handleGetMe = async () =>{
-        try{
-            dispatch(setLoading(true));
-            const data = await getMe();
-            dispatch(setUser(data.user)) 
-        }catch(error){
-            dispatch(setError(error.response?.data?.message))
-        }
-        finally{
-            dispatch(setLoading(false))
-        }
+  const handleGetMe = useCallback(async () => {
+    try {
+      dispatch(setLoading(true));
+      dispatch(setError(null));
+      const data = await getMe();
+      dispatch(setUser(data.user));
+    } catch {
+      dispatch(setUser(null));
+    } finally {
+      dispatch(setLoading(false));
     }
+  }, [dispatch]);
 
-    return {handleLogin,handleRegsiter,handleGetMe}
-} 
+  const handleLogout = useCallback(async () => {
+    try {
+      dispatch(setLoading(true));
+      dispatch(setError(null));
+      await logout();
+    } catch (error) {
+      dispatch(setError(getApiErrorMessage(error, "Logout failed")));
+    } finally {
+      dispatch(setUser(null));
+      dispatch(setLoading(false));
+    }
+  }, [dispatch]);
+
+  return { ...auth, handleLogin, handleRegister, handleGetMe, handleLogout };
+};

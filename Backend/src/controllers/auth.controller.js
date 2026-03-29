@@ -1,10 +1,12 @@
 import userModel from "../models/user.model.js";
 import sendMail from "../services/email.service.js";
-import jwt from "jsonwebtoken"
 import { signToken } from "../middleware/jwt.middleware.js";
 import { verifyToken } from "../middleware/jwt.middleware.js";
 import dotenv from "dotenv"
 dotenv.config();
+
+const requireEmailVerification =
+  process.env.REQUIRE_EMAIL_VERIFICATION === "true";
 
 
 // @ desc Register a new user
@@ -13,7 +15,7 @@ dotenv.config();
 export async function registerController(req, res, next) {
     const { username, email, password, phone } = req.body;
 
-    if (!username && !email && !password && !phone) {
+    if (!username || !email || !password || !phone) {
         return res.status(400).json({
             message: "Invalid credentials",
             success: false,
@@ -31,18 +33,26 @@ export async function registerController(req, res, next) {
         username,
         email,
         password,
-        phone
+        phone,
+        verified: !requireEmailVerification,
     })
-    const token = await signToken({ email: newUser.email });
 
-    sendMail(email, "Welcome to our App", `<h1>Welcome to our App</h1><p>Thank you for registering with us. We're excited to have you on board!</p> <a href='http://localhost:3000/api/auth/verify-email?token=${token}'>Verify Email</a>`, "Welcome to our App, Thank you for registering with us. We're excited to have you on board!");
+    if (requireEmailVerification) {
+        const token = await signToken({ email: newUser.email });
+
+        sendMail(
+          email,
+          "Welcome to our App",
+          `<h1>Welcome to our App</h1><p>Thank you for registering with us. We're excited to have you on board!</p> <a href='http://localhost:3000/api/auth/verify-email?token=${token}'>Verify Email</a>`,
+          "Welcome to our App, Thank you for registering with us. We're excited to have you on board!"
+        );
+    }
+
     res.status(200).json({ message: "User Register Successfully", success: true, user: {
         username: newUser.username,
         email:newUser.email,
         phone:newUser.phone
     } })
-    next();
-
 }
 
 // @ desc Verify email of user
@@ -68,7 +78,6 @@ export async function emailVerifyController(req, res, next) {
          <p>Your email has been verified successfully. You can now log in to your account and start using our services.</p>
        URL : <a href="http://localhost:3000/login">Login</a>`
         res.send(html)
-        next();
     } catch (err) {
         return res.status(400).json({ message: "Invalid credential", success: false, err: "Invalid Token" })
     }
@@ -79,9 +88,9 @@ export async function emailVerifyController(req, res, next) {
 // @ route POST /api/auth/login
 // @ access Public
 export async function loginController(req, res, next) {
-    const { email, password, username } = req.body;
+    const { email, password } = req.body;
 
-    if ((!username || !email) && !password) {
+    if (!email || !password) {
         return res.status(400).json({
             message: "Invalid credentials",
             success: false,
@@ -89,7 +98,7 @@ export async function loginController(req, res, next) {
         })
     }
     const user = await userModel.findOne({
-        $or: [{ email }, { username }]
+        email
     }).select("+password")
     if (!user) {
         return res.status(400).json({ message: "user not found.", success: false, err: "Please register first" })
@@ -99,7 +108,7 @@ export async function loginController(req, res, next) {
     if (!isMatch) {
         return res.status(400).json({ message: "Invalid credentials", success: false, err: "Incorrect password" })
     }
-    if (!user.verified) {
+    if (requireEmailVerification && !user.verified) {
         return res.status(400).json({ message: "Please verify your email first", success: false, err: "Email not verified" })
     }
     const token = await signToken({ email: user.email, username: user.username, id: user._id })
@@ -109,7 +118,6 @@ export async function loginController(req, res, next) {
         email:user.email,
         phone:user.phone
     } })
-    next()
 }
 
 
@@ -127,14 +135,12 @@ export async function getMeContrller(req, res, next) {
     return res.status(400).json({message:"User not found",success:false,err:"User details not found"})
   }
   res.status(200).json({message:"User details found",success:true,user})
-  next();
 }
 
 // @ desc logout the user
 // @ route POST /api/auth/logout
 // access Private
 export async function logoutController(req,res,next){
-    const token = req.cookies.token
     res.clearCookie("token")
     res.status(200).json({message:"Logout Successfully",success:true})
 }

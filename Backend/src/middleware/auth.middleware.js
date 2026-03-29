@@ -1,4 +1,3 @@
-import jwt from "jsonwebtoken"
 import {verifyToken} from "./jwt.middleware.js"
 
 export const authUser = async (req, res, next) => {

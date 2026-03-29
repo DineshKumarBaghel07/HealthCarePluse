@@ -1,25 +1,25 @@
+import { useCallback } from "react";
+import { useDispatch } from "react-redux";
 import { initializeSocketConnection } from "../service/chat.socket.js";
-import reducer from "../chat.slice.js";
-import { setError,setLoading,setchat,createNewChat,addMessage,addNewMessage } from "../chat.slice.js";
-import {useDispatch} from "react-redux";
-import { sendMessage,getChat,getMessage,deleteChat } from "../service/chat.api.js";
-
+import { setLoading, createNewChat } from "../chat.slice.js";
+import { sendMessage } from "../service/chat.api.js";
 
 export const useChat = () => {
-   const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-   const handleSendMessage =async ({message,chatId}) =>{
-     dispatch(setLoading(true));
-     const data = await sendMessage({message,chatId});
-     const {chat,aiMessage} = data;
-     dispatch(createNewChat({chatId :chat._id,title:chat.title}))
-   } 
-  
+  const handleSendMessage = useCallback(async ({ message, chatId }) => {
+    dispatch(setLoading(true));
+    try {
+      const data = await sendMessage({ message, chatId });
+      const { chat, aiMessage } = data;
+      dispatch(createNewChat({ chatId: chat._id, title: chat.title }));
+      return { chat, aiMessage };
+    } finally {
+      dispatch(setLoading(false));
+    }
+  }, [dispatch]);
 
+  const connectSocket = useCallback(() => initializeSocketConnection(), []);
 
-
-
-
-
-  return {initializeSocketConnection};
-}
+  return { initializeSocketConnection: connectSocket, handleSendMessage };
+};

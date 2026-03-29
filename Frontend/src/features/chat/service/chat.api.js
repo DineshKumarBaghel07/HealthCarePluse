@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const url = import.meta.env.BASEURL || "http://localhost:3000"
+const url = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const api = axios.create({
     baseURL:url,
     withCredentials:true
-})
+});
 
 
 export const sendMessage = async({message,chatId}) =>{

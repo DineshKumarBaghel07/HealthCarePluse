@@ -1,0 +1,63 @@
+.register-page{
+  padding:80px 50px;
+  text-align:center;
+}
+
+.register-page h1{
+  font-size:36px;
+  color:#0a6ebd;
+  margin-bottom:10px;
+}
+
+.register-text{
+  color:#555;
+  margin-bottom:30px;
+}
+
+.register-form{
+  max-width:400px;
+  margin:auto;
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+}
+
+.register-form input,
+.register-form select{
+  padding:12px;
+  border:1px solid #ddd;
+  border-radius:6px;
+  font-size:15px;
+}
+
+.register-btn{
+  padding:12px;
+  background:#0a6ebd;
+  color:white;
+  border:none;
+  border-radius:6px;
+  font-size:16px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.register-btn:hover{
+  background:#084f8a;
+}
+
+.login-link{
+  font-size:14px;
+  margin-top:10px;
+}
+
+.login-link a{
+  color:#0a6ebd;
+  text-decoration:none;
+}
+.error{
+color:red;
+font-size:13px;
+text-align:left;
+margin-top:-10px;
+margin-bottom:5px;
+}
