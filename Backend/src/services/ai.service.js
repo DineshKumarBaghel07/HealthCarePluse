@@ -18,6 +18,7 @@ function getGeminiModel() {
     geminiModel = new ChatGoogleGenerativeAI({
       model: "gemini-2.5-flash-lite",
       apiKey: process.env.GEMINI_API_KEY,
+      streaming:true
     });
   }
 
@@ -39,21 +40,44 @@ function getMistralModel() {
   return mistralModel;
 }
 
-export const generateResponse = async (messages) => {
-  const formatted = [
-    systemMessage,
-    ...messages.map((msg) => {
-      if (msg.role === "user") {
-        return new HumanMessage(msg.content);
-      }
+export const generateResponse = async (
+    messages,
+    socket,
+    chatId
+) => {
 
-      return new AIMessage(msg.content);
-    }),
-  ];
+    const formatted = [
+        systemMessage,
+        ...messages.map(msg =>
+            msg.role === "user"
+                ? new HumanMessage(msg.content)
+                : new AIMessage(msg.content)
+        )
+    ];
 
-  const response = await getGeminiModel().invoke(formatted);
-  return response.content;
+    let fullResponse = "";
+  
+    const stream = await getGeminiModel().stream(formatted);
+      
+    for await (const chunk of stream) {
+
+        const token = chunk.content || "";
+
+        fullResponse += token;
+       
+        socket.emit("ai_stream", {
+            chatId,
+            token
+        });
+
+    }
+
+    // socket.emit("ai_stream_end", { chatId });
+    console.log("check by Dines"+fullResponse)
+    return fullResponse;
+
 };
+
 
 export const generateTitle = async (title) => {
   const response = await getMistralModel().invoke([

@@ -1,77 +1,136 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./Chatbot.css";
 
+import { useSelector } from "react-redux";
+import { useChat } from "../hooks/useChat.js";
+import { useChatSocket } from "../hooks/useChatSocekt.js";
+
 export default function Chatbot({ onClose }) {
-  const [messages, setMessages] = useState([]);
+
   const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
+
+  const { chats, currentChatId, isLoading } =
+    useSelector((state) => state.chat);
+
+  const {
+    handleSendMessage,
+    initializeSocketConnection
+  } = useChat();
+
   const chatEndRef = useRef(null);
 
+  // initialize socket once
+  useEffect(() => {
+    initializeSocketConnection();
+  }, [initializeSocketConnection]);
+
+  // start listening to streaming tokens
+  useChatSocket();
+
+  // SAFE messages selector
+  const messages = currentChatId
+    ? chats[currentChatId]?.messages || []
+    : [];
+
   const sendMessage = () => {
+
     if (!input.trim()) return;
 
-    const userMessage = { text: input, sender: "user" };
-    setMessages((prev) => [...prev, userMessage]);
-
-    setTyping(true);
-
-    setTimeout(() => {
-      const botMessage = {
-        text: `You said: ${input}`,
-        sender: "bot",
-      };
-
-      setMessages((prev) => [...prev, botMessage]);
-      setTyping(false);
-    }, 800);
+    handleSendMessage({
+      message: input,
+      chatId: currentChatId
+    });
 
     setInput("");
   };
 
-  // Auto scroll
+  // auto-scroll when messages update
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, typing]);
+
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({
+        behavior: "smooth"
+      });
+    }
+
+  }, [messages]);
 
   return (
+
     <div className="chat-container">
+
       <div className="chat-header">
+
         <span>💬 AI Assistant</span>
+
         {onClose && (
-          <button className="chat-close-btn" onClick={onClose}>
+
+          <button
+            className="chat-close-btn"
+            onClick={onClose}
+          >
             ✕
           </button>
+
         )}
+
       </div>
 
       <div className="chat-box">
+
         <ul className="chat-list">
+
           {messages.map((msg, index) => (
-            <li key={index} className={`chat-bubble ${msg.sender}`}>
-              {msg.text}
+
+            <li
+              key={index}
+              className={`chat-bubble ${
+                msg.role === "user"
+                  ? "user"
+                  : "bot"
+              }`}
+            >
+              {msg.content}
             </li>
+
           ))}
 
-          {typing && (
+          {isLoading && (
+
             <li className="chat-bubble bot typing">
-              <span></span><span></span><span></span>
+              <span></span>
+              <span></span>
+              <span></span>
             </li>
+
           )}
+
         </ul>
 
         <div ref={chatEndRef} />
+
       </div>
 
       <div className="input-box">
+
         <input
           type="text"
           value={input}
           placeholder="Type a message..."
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          onChange={(e) =>
+            setInput(e.target.value)
+          }
+          onKeyDown={(e) =>
+            e.key === "Enter" && sendMessage()
+          }
         />
-        <button onClick={sendMessage}>➤</button>
+
+        <button onClick={sendMessage}>
+          ➤
+        </button>
+
       </div>
+
     </div>
   );
 }

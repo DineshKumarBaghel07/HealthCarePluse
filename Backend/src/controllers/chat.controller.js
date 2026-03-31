@@ -6,39 +6,45 @@ import messageModel from "../models/message.model.js"
 // @route POST /api/chats/message
 // access private
 export async function sendMessage(req, res) {
+
     const { message, chatId } = req.body;
 
-    let title = null;
-    let chat = null;
+    let chat;
+
+    // create chat if first message
     if (!chatId) {
-        title = await generateTitle(message);
+
+        const title = await generateTitle(message);
+
         chat = await chatModel.create({
             user: req.user.id,
             title
-        })
+        });
+
+    } 
+    // otherwise fetch existing chat
+    else {
+
+        chat = await chatModel.findById(chatId);
+
+        if (!chat) {
+            return res.status(404).json({
+                message: "Chat not found"
+            });
+        }
     }
 
-    const userMessage = await messageModel.create({
-        chat: chatId || chat._id,
+    // store user message
+    await messageModel.create({
+        chat: chat._id,
         content: message,
         role: "user"
-    })
+    });
 
-    const messages = await messageModel.find({ chat: chatId || chat._id })
-    const response = await generateResponse(messages);
-    const aiMessage = await messageModel.create({
-        chat: chatId || chat._id,
-        content: response,
-        role: "ai"
-    })
-
+    // always return chat object
     res.status(201).json({
-        title, chat,
-        aiMessage
-    })
-
-
-
+        chat
+    });
 }
 
 // @ desc get all chats for a user

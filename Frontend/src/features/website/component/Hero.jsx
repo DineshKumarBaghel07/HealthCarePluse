@@ -41,12 +41,9 @@ export default function Hero() {
 
       <div className="hero-right">
         <div className="hero-image-shell">
-          <div className="hero-badge hero-badge-top">
-            <strong>98%</strong>
-            <span>patient satisfaction</span>
-          </div>
+          
           <img
-            src="https://i.pinimg.com/736x/69/0d/30/690d30a022897f4a4ccf7560419b5175.jpg"
+            src="../../../public/docter.jpg"
             alt="Healthcare professionals"
           />
           <div className="hero-badge hero-badge-bottom">
