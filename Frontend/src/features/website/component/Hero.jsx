@@ -43,7 +43,7 @@ export default function Hero() {
         <div className="hero-image-shell">
           
           <img
-            src="../../../public/docter.jpg"
+            src="/docter.jpg"
             alt="Healthcare professionals"
           />
           <div className="hero-badge hero-badge-bottom">
