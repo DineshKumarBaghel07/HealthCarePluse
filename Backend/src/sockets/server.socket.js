@@ -8,7 +8,7 @@ export const initSocketServer = (httpServer) => {
 
     io = new Server(httpServer, {
         cors: {
-            origin: "http://localhost:5173",
+            origin: "https://healthcarepluse-2.onrender.com",
             credentials: true
         }
     });
