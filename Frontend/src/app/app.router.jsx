@@ -7,6 +7,8 @@ import Register from "../features/auth/pages/Register";
 import Protected from "../features/website/component/Protected";
 import Dashboard from "../features/chat/pages/Dashboard";
 import Chatbot from "../features/chat/pages/Chatbot";
+import DoctorDashboard from "../features/doctor/DoctorDashboard";
+import SuperAdminDashboard from "../features/superAdmin/SuperAdminDashboard";
 
 export const router = createBrowserRouter([
   {
@@ -42,6 +44,22 @@ export const router = createBrowserRouter([
     element: (
       <Protected>
         <Chatbot />
+      </Protected>
+    ),
+  },
+  {
+    path: "/doctor",
+    element: (
+      <Protected>
+        <DoctorDashboard />
+      </Protected>
+    ),
+  },
+  {
+    path: "/super-admin",
+    element: (
+      <Protected>
+        <SuperAdminDashboard />
       </Protected>
     ),
   },
