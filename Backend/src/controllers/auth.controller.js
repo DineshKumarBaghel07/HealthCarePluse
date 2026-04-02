@@ -112,7 +112,8 @@ export async function loginController(req, res, next) {
         return res.status(400).json({ message: "Please verify your email first", success: false, err: "Email not verified" })
     }
     const token = await signToken({ email: user.email, username: user.username, id: user._id })
-    res.cookie("token", token,{expires:new Date(Date.now() + 24*60*60*1000),httpOnly:true})
+    res.cookie("token", token,{expires:new Date(Date.now() + 24*60*60*1000),httpOnly:true,secure: true,
+  sameSite: "none"})
     res.status(200).json({ message: "Login Successfully", success: true, user:{
         username: user.username,
         email:user.email,
