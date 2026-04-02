@@ -6,7 +6,7 @@ export const initializeSocketConnection = () => {
 
   if (!socket) {
 
-    socket = io("https://healthcarepluse-backend.onrender.com", {
+    socket = io("https://healthcarepluse.onrender.com", {
       withCredentials: true
     });
 
