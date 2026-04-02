@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const url = import.meta.env.VITE_API_URL || "https://healthcarepluse.onrender.com/";
+const url = import.meta.env.VITE_API_URL || "https://healthcarepluse.onrender.com";
 const api = axios.create({
   baseURL: url,
   withCredentials: true,
