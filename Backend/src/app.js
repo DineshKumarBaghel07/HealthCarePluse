@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin:"https://healthcarepluse-frontend.onrender.com,
+    origin:"https://healthcarepluse-frontend.onrender.com",
     credentials: true,
   }),
 );
